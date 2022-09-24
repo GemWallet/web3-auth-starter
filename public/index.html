@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+    />
+    <title>Web3 Starter - GemWallet</title>
+    <script src="./gemwallet-api.js"></script>
+  </head>
+  <body
+    style="
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    "
+  >
+    <div class="container">
+      <div
+        class="card-panel"
+        style="display: flex; justify-content: center"
+        id="loginButtonContainer"
+      >
+        <button onclick="connect()" class="waves-effect waves-light btn">
+          Login with GemWallet
+        </button>
+      </div>
+
+      <div id="welcomeContainer" style="display: none">
+        <div class="card-panel">
+          <p>Welcome <span id="address"></span></p>
+        </div>
+        <div class="card-panel">
+          <button
+            onclick="restrictedAction()"
+            id="restrictedButton"
+            class="waves-effect waves-light btn"
+          >
+            Restricted action
+          </button>
+          <p id="accessTokenInfo">
+            Click on this button only if you want to prove your identity
+          </p>
+          <code
+            class="language-markup"
+            style="word-break: break-all"
+            id="accessToken"
+          ></code>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      const MESSAGE = "Florian";
+      let pbk = "";
+
+      const connect = async () => {
+        const isConnected = await GemWalletApi.isConnected();
+        if (isConnected) {
+          const responsePublicKey = await GemWalletApi.getPublicKey();
+          if (responsePublicKey) {
+            const { address, publicKey } = responsePublicKey;
+            pbk = publicKey;
+
+            document.getElementById("loginButtonContainer").style =
+              "display: none";
+            document.getElementById("address").textContent = address;
+            document.getElementById("welcomeContainer").style =
+              "display: block; text-align: center;";
+          }
+        } else {
+          alert(
+            "User doesn't have GemWallet! Please install it: https://gemwallet.app"
+          );
+        }
+      };
+
+      const restrictedAction = async () => {
+        const accessToken = await authenticate(pbk);
+
+        document.getElementById("accessTokenInfo").textContent =
+          "Your JWT token to prove your identity is:";
+        document.getElementById("accessToken").textContent = accessToken;
+      };
+
+      const authenticate = async (account) => {
+        // Gets nonce from backend
+        const nonceTokenReq = await fetch(`/nonce?address=${account}`);
+        const nonceToken = await nonceTokenReq.json();
+
+        console.log("response nonce: ", nonceToken);
+
+        const opts = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${nonceToken}`,
+          },
+        };
+
+        const signedMessage = await GemWalletApi.signMessage(nonceToken);
+
+        // Verify the signature
+        const resVerify = await fetch(
+          `/verify?signature=${signedMessage}`,
+          opts
+        );
+        resVerifyBody = await resVerify.json();
+
+        return resVerifyBody.token;
+      };
+    </script>
+  </body>
+</html>
