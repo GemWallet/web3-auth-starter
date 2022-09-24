@@ -32,7 +32,7 @@
 
       <div id="welcomeContainer" style="display: none">
         <div class="card-panel">
-          <p>Welcome <span id="address"></span></p>
+          <p>Welcome <b id="address"></b></p>
         </div>
         <div class="card-panel">
           <button
@@ -55,7 +55,6 @@
     </div>
 
     <script type="text/javascript">
-      const MESSAGE = "Florian";
       let pbk = "";
 
       const connect = async () => {
@@ -87,12 +86,10 @@
         document.getElementById("accessToken").textContent = accessToken;
       };
 
-      const authenticate = async (account) => {
+      const authenticate = async (publicKey) => {
         // Gets nonce from backend
-        const nonceTokenReq = await fetch(`/nonce?address=${account}`);
+        const nonceTokenReq = await fetch(`/nonce?pbk=${publicKey}`);
         const nonceToken = await nonceTokenReq.json();
-
-        console.log("response nonce: ", nonceToken);
 
         const opts = {
           method: "POST",

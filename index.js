@@ -14,9 +14,9 @@ app.use(express.static("public"));
 // API - Generate a nonce for the message to be signed
 app.get("/nonce", (req, res) => {
   const nonce = uuidv4();
-  const address = req.query.address;
+  const { pbk } = req.query;
 
-  const token = jwt.sign({ nonce, address }, jwtSecret, {
+  const token = jwt.sign({ nonce, public_key: pbk }, jwtSecret, {
     expiresIn: "60s",
   });
 
@@ -32,15 +32,15 @@ app.post("/verify", async (req, res) => {
     return res.sendStatus(403);
   }
 
-  const { address } = await jwt.verify(tempToken, jwtSecret);
+  const { public_key, address } = await jwt.verify(tempToken, jwtSecret);
   const { signature } = req.query;
 
-  // Verify the signature, tempToken and address match
+  // Verify the signature, tempToken and public_key match
   const tempTokenHex = (Buffer.from(tempToken, 'utf8')).toString('hex')
   const isVerified = rippleKP.verify(
     tempTokenHex,
     signature,
-    address,
+    public_key,
   );
 
   if (isVerified) {
