@@ -6,6 +6,8 @@
 
 :warning: Don't forget to install [GemWallet](https://gemwallet.app)
 
+This repository is used in the following tutorial: [Create a web3 authentication on the XRPL with GemWallet](https://youtu.be/20EjOtXnICY).
+
 This repository is showcasing how to create a web3 login (authentication) on the XRPL (XRP Ledger) thanks to GemWallet.
 
 ## How does the web3 authentication works?
